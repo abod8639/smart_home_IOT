@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "esp32",
+			"path": "../../../../../flutter_apps/smart_home/esp32"
+		},
+		{
+			"name": "smart_home_IOT",
+			"path": ".."
+		}
+	],
+	"settings": {}
+}
