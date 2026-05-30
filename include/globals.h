@@ -7,9 +7,11 @@
 #include <Preferences.h>
 #define IR_RECEIVE_PIN 32
 #define IR_SEND_PIN 33
+#define RAW_BUFFER_LENGTH 750
 #define USE_IRREMOTE_HPP_AS_PLAIN_INCLUDE
 #include <IRremote.hpp>
-
+/ home / dexter / Documents / PlatformIO / Projects /
+    smart_home_IOT
 // ─── Firmware Version ────────────────────────────────────────
 #define FIRMWARE_VERSION  "1.0.0"
 #define DEVICE_NAME       "SmartHome-ESP32"
@@ -23,8 +25,8 @@
 #define DHT_PIN           4
 #define DHT_TYPE          DHT22
 
-// ─── GPIO Pin Map Struct ──────────────────────────────────────
-struct PinConfig {
+    // ─── GPIO Pin Map Struct ──────────────────────────────────────
+    struct PinConfig {
   uint8_t gpio;
   const char* label;
   bool isPwm;       // true = PWM/analog output, false = digital relay
