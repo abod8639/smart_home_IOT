@@ -12,9 +12,8 @@ void writePinHardware(uint8_t gpio, int value) {
   if (!pin) return;
 
   if (pin->isPwm) {
-    uint8_t ch      = pinToPwmChannel[gpio];
     int     duty    = constrain(value, 0, 255);
-    ledcWrite(ch, duty);
+    ledcWrite(gpio, duty);
     analogValue[gpio] = duty;
     digitalState[gpio] = (duty > 0);
   } else {
@@ -50,12 +49,11 @@ void setupGPIO() {
   for (uint8_t i = 0; i < PIN_COUNT; i++) {
     uint8_t gpio = PIN_MAP[i].gpio;
     if (PIN_MAP[i].isPwm) {
-      uint8_t ch = pwmChannelIndex++;
-      pinToPwmChannel[gpio] = ch;
-      ledcSetup(ch, PWM_FREQ, PWM_RESOLUTION);
-      ledcAttachPin(gpio, ch);
-      Serial.printf("[GPIO] PWM  pin %d (%s) -> channel %d\n",
-                    gpio, PIN_MAP[i].label, ch);
+      // In Arduino Core 3.0, we call ledcAttach(pin, freq, resolution)
+      // Channels are managed automatically under the hood.
+      ledcAttach(gpio, PWM_FREQ, PWM_RESOLUTION);
+      Serial.printf("[GPIO] PWM  pin %d (%s) attached\n",
+                    gpio, PIN_MAP[i].label);
     } else {
       pinMode(gpio, OUTPUT);
       digitalWrite(gpio, LOW);
