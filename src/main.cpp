@@ -1,5 +1,8 @@
 #include <Arduino.h>
-#include "globals.h"
+// Must include IRremote.hpp here (without USE_IRREMOTE_HPP_AS_PLAIN_INCLUDE)
+// so this TU instantiates IrReceiver / IrSender for the whole project.
+#include <IRremote.hpp>
+#include "globals.h"  // IR pin macros defined here (IR_RECEIVE_PIN, IR_SEND_PIN)
 #include "wifi_manager.h"
 #include "gpio_manager.h"
 #include "http_handlers.h"
@@ -23,9 +26,9 @@ void setup() {
   server.begin();
   Serial.println("[HTTP] Web server started on port 80");
 
-  irsend.begin();
-  irrecv.enableIRIn();
-  Serial.println("[IR] Receiver and transmitter initialized");
+  IrReceiver.begin(IR_RECEIVE_PIN, DISABLE_LED_FEEDBACK);
+  IrSender.begin(IR_SEND_PIN);
+  Serial.printf("[IR] Receiver on GPIO%d, Transmitter on GPIO%d\n", IR_RECEIVE_PIN, IR_SEND_PIN);
 
   // Restore last-known pin states from NVS flash
   restorePinStates();
