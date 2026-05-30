@@ -19,9 +19,9 @@ void handleOtaUpdate() {
     return;
   }
 
-  StaticJsonDocument<256> req;
+  JsonDocument req;
   DeserializationError err = deserializeJson(req, server.arg("plain"));
-  if (err || !req.containsKey("url")) {
+  if (err || !req["url"].is<const char*>()) {
     sendSimple(400, "error", "Invalid JSON — 'url' field required");
     return;
   }
@@ -131,7 +131,7 @@ void handleOtaStatus() {
   logRequest();
   setCorsHeaders();
 
-  StaticJsonDocument<128> doc;
+  JsonDocument doc;
 
   switch (otaState) {
     case OtaState::IDLE:
