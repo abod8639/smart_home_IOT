@@ -5,8 +5,10 @@
 #include <WebServer.h>
 #include <DHT.h>
 #include <Preferences.h>
-#include <IRrecv.h>
-#include <IRsend.h>
+#define IR_RECEIVE_PIN 32
+#define IR_SEND_PIN 12
+#define USE_IRREMOTE_HPP_AS_PLAIN_INCLUDE
+#include <IRremote.hpp>
 
 // ─── Firmware Version ────────────────────────────────────────
 #define FIRMWARE_VERSION  "1.0.0"
@@ -59,10 +61,7 @@ extern Preferences prefs;
 extern DHT dht;
 
 // ─── IR Receiver and Transmitter ─────────────────────────────
-#define IR_RECV_PIN       14
-#define IR_SEND_PIN       12
-
-extern IRrecv irrecv;
-extern IRsend irsend;
+// (Pins are configured via macros and handled by the global IrReceiver/IrSender
+// instances)
 
 #endif // GLOBALS_H
