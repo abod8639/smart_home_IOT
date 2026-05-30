@@ -7,7 +7,7 @@ const PinConfig* findPin(uint8_t gpio) {
   return nullptr;
 }
 
-void writePin(uint8_t gpio, int value) {
+void writePinHardware(uint8_t gpio, int value) {
   const PinConfig* pin = findPin(gpio);
   if (!pin) return;
 
@@ -16,11 +16,16 @@ void writePin(uint8_t gpio, int value) {
     int     duty    = constrain(value, 0, 255);
     ledcWrite(ch, duty);
     analogValue[gpio] = duty;
+    digitalState[gpio] = (duty > 0);
   } else {
     bool on = (value != 0);
     digitalWrite(gpio, on ? HIGH : LOW);
     digitalState[gpio] = on;
   }
+}
+
+void writePin(uint8_t gpio, int value) {
+  writePinHardware(gpio, value);
 
   // Persist state across reboots
   prefs.begin("pins", false);
@@ -35,7 +40,7 @@ void restorePinStates() {
     uint8_t gpio = PIN_MAP[i].gpio;
     String  key  = "p" + String(gpio);
     int     val  = prefs.getInt(key.c_str(), 0);
-    writePin(gpio, val);
+    writePinHardware(gpio, val);
   }
   targetTemperature = prefs.getInt("target_temp", 24);
   prefs.end();
