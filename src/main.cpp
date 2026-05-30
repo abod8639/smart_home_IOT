@@ -40,10 +40,6 @@ void setup() {
   dht.begin();
   Serial.println("[DHT] Sensor initialized");
 
-  setupRoutes();
-  server.begin();
-  Serial.println("[HTTP] Web server started on port 80");
-
   IrReceiver.begin(IR_RECEIVE_PIN, DISABLE_LED_FEEDBACK);
   IrSender.begin(IR_SEND_PIN);
   Serial.printf("[IR] Receiver on GPIO%d, Transmitter on GPIO%d\n", IR_RECEIVE_PIN, IR_SEND_PIN);
@@ -52,8 +48,6 @@ void setup() {
   restorePinStates();
   Serial.println("[NVS] Pin states restored\n");
 
-  // Start the standard ArduinoOTA service
-  setupOTA();
 
   // Initialize Matter Endpoints
   Light1.begin(false);
@@ -109,6 +103,13 @@ void setup() {
   // Start Matter Stack (must be last)
   Matter.begin();
   Serial.println("[Matter] Stack initialized and started");
+
+  // Web Server and OTA must be started AFTER Matter.begin() initializes the TCP/IP (LwIP) stack.
+  setupRoutes();
+  server.begin();
+  Serial.println("[HTTP] Web server started on port 80");
+
+  setupOTA();
 
   pinMode(buttonPin, INPUT_PULLUP);
 
