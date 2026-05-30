@@ -10,8 +10,7 @@
 #define RAW_BUFFER_LENGTH 750
 #define USE_IRREMOTE_HPP_AS_PLAIN_INCLUDE
 #include <IRremote.hpp>
-/ home / dexter / Documents / PlatformIO / Projects /
-    smart_home_IOT
+
 // ─── Firmware Version ────────────────────────────────────────
 #define FIRMWARE_VERSION  "1.0.0"
 #define DEVICE_NAME       "SmartHome-ESP32"
