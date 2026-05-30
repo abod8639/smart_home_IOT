@@ -44,13 +44,14 @@ void handleDigitalControl() {
   }
 
   if (pin->isPwm) {
-    Serial.println("  -> Error: Requested pin is configured as PWM");
-    sendSimple(400, "error", "This pin is PWM. Use /control/analog instead");
-    return;
+    // Map digital value to PWM duty cycle (0 or 255)
+    int pwmValue = (value != 0) ? 255 : 0;
+    writePin(gpio, pwmValue);
+    Serial.printf("  -> PWM Pin %d digitally set to %d\n", gpio, pwmValue);
+  } else {
+    writePin(gpio, value);
+    Serial.printf("  -> Pin %d successfully set to %d\n", gpio, value);
   }
-
-  writePin(gpio, value);
-  Serial.printf("  -> Pin %d successfully set to %d\n", gpio, value);
 
   StaticJsonDocument<128> res;
   res["status"]  = "ok";
