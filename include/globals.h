@@ -6,7 +6,7 @@
 #include <DHT.h>
 #include <Preferences.h>
 #define IR_RECEIVE_PIN 32
-#define IR_SEND_PIN 12
+#define IR_SEND_PIN 33
 #define USE_IRREMOTE_HPP_AS_PLAIN_INCLUDE
 #include <IRremote.hpp>
 
