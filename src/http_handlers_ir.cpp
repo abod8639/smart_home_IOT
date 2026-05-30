@@ -105,6 +105,9 @@ void handleIrLearn() {
       doc["protocol"] = protocolName;
       doc["value"]    = hexStr;
       doc["bits"]     = IrReceiver.decodedIRData.numberOfBits;
+      doc["address"]  = IrReceiver.decodedIRData.address;
+      doc["command"]  = IrReceiver.decodedIRData.command;
+      doc["rawData"]  = (uint32_t)IrReceiver.decodedIRData.decodedRawData;
 
       // Extract specific timings for custom/universal Pulse Distance or Width protocols
       if (IrReceiver.decodedIRData.protocol == PULSE_DISTANCE || IrReceiver.decodedIRData.protocol == PULSE_WIDTH) {
@@ -179,50 +182,68 @@ void handleIrSend() {
       delete[] rawArray;
     }
   } else if (protocol.equalsIgnoreCase("PULSE_DISTANCE") || 
-             protocol.equalsIgnoreCase("PULSE_WIDTH") ||
-             protocol.equalsIgnoreCase("PULSE_WIDTH_AC") || 
-             protocol.equalsIgnoreCase("UNKNOWN_AC")) {
+             protocol.equalsIgnoreCase("PULSE_WIDTH")) {
     
-    // Parse timing parameters with fallbacks (defaulting to the user's AC remote timing specs)
-    uint32_t frequency   = req["frequency"].is<uint32_t>() ? req["frequency"].as<uint32_t>() : 38;
-    uint16_t headerMark  = req["headerMark"].is<uint16_t>() ? req["headerMark"].as<uint16_t>() : 3850;
-    uint16_t headerSpace = req["headerSpace"].is<uint16_t>() ? req["headerSpace"].as<uint16_t>() : 1900;
-    uint16_t oneMark     = req["oneMark"].is<uint16_t>() ? req["oneMark"].as<uint16_t>() : 500;
-    uint16_t oneSpace    = req["oneSpace"].is<uint16_t>() ? req["oneSpace"].as<uint16_t>() : 1400;
-    uint16_t zeroMark    = req["zeroMark"].is<uint16_t>() ? req["zeroMark"].as<uint16_t>() : 500;
-    uint16_t zeroSpace   = req["zeroSpace"].is<uint16_t>() ? req["zeroSpace"].as<uint16_t>() : 450;
+    // kHz frequency — default 38 kHz
+    uint8_t frequency = req["frequency"].is<uint8_t>() ? req["frequency"].as<uint8_t>() : 38;
+
+    // Timing parameters (µs) with defaults from observed AC remote
+    uint16_t headerMark  = req["headerMark"].is<uint16_t>()  ? req["headerMark"].as<uint16_t>()  : 3800;
+    uint16_t headerSpace = req["headerSpace"].is<uint16_t>() ? req["headerSpace"].as<uint16_t>() : 1950;
+    uint16_t oneMark     = req["oneMark"].is<uint16_t>()     ? req["oneMark"].as<uint16_t>()     : 400;
+    uint16_t oneSpace    = req["oneSpace"].is<uint16_t>()    ? req["oneSpace"].as<uint16_t>()    : 1500;
+    uint16_t zeroMark    = req["zeroMark"].is<uint16_t>()    ? req["zeroMark"].as<uint16_t>()    : 400;
+    uint16_t zeroSpace   = req["zeroSpace"].is<uint16_t>()   ? req["zeroSpace"].as<uint16_t>()   : 550;
     
     uint8_t flags = PROTOCOL_IS_LSB_FIRST;
-    if (req["flags"].is<uint8_t>()) {
-      flags = req["flags"].as<uint8_t>();
-    } else if (req["isMsb"].is<bool>() && req["isMsb"].as<bool>()) {
+    if (req["isMsb"].is<bool>() && req["isMsb"].as<bool>()) {
       flags = PROTOCOL_IS_MSB_FIRST;
     }
 
     IRRawDataType dataArray[RAW_DATA_ARRAY_SIZE] = {0};
     int parsedCount = parseCommaSeparatedHex(valueStr.c_str(), dataArray, RAW_DATA_ARRAY_SIZE);
-    
+    (void)parsedCount;
+
+    Serial.printf("[IR] Sending PULSE_DISTANCE: freq=%u kHz, header=%u/%u, one=%u/%u, zero=%u/%u, bits=%u, flags=%u\n",
+      frequency, headerMark, headerSpace, oneMark, oneSpace, zeroMark, zeroSpace, bits, flags);
+
     IrSender.sendPulseDistanceWidthFromArray(
       frequency, headerMark, headerSpace, oneMark, oneSpace, zeroMark, zeroSpace,
       dataArray, bits, flags, 0, 0
     );
   } else {
-    // Standard protocol
+    // Standard protocols: NEC, Samsung, Sony, LG, etc.
+    // The Flutter app sends address + command if available (simpler and more reliable)
+    // Fallback: reconstruct IRData from hex value array
     IRData irData;
     memset(&irData, 0, sizeof(irData));
-    irData.protocol = parseProtocol(protocol.c_str());
+    irData.protocol     = parseProtocol(protocol.c_str());
     irData.numberOfBits = bits;
 
-    int bitsPerWord = sizeof(IRRawDataType) * 8;
-    int numWords = (bits + bitsPerWord - 1) / bitsPerWord;
-    IRRawDataType dataArray[RAW_DATA_ARRAY_SIZE] = {0};
-    parseCommaSeparatedHex(valueStr.c_str(), dataArray, RAW_DATA_ARRAY_SIZE);
-    for (int w = 0; w < numWords && w < RAW_DATA_ARRAY_SIZE; w++) {
-      irData.decodedRawDataArray[w] = dataArray[w];
+    // Prefer address/command if explicitly sent
+    if (req["address"].is<uint16_t>() && req["command"].is<uint16_t>()) {
+      irData.address = req["address"].as<uint16_t>();
+      irData.command = req["command"].as<uint16_t>();
+      irData.decodedRawData = req["rawData"].is<uint32_t>()
+                              ? req["rawData"].as<uint32_t>()
+                              : 0;
+      irData.decodedRawDataArray[0] = irData.decodedRawData;
+    } else {
+      // Reconstruct from hex word array
+      int bitsPerWord = sizeof(IRRawDataType) * 8;
+      int numWords = (bits + bitsPerWord - 1) / bitsPerWord;
+      IRRawDataType dataArray[RAW_DATA_ARRAY_SIZE] = {0};
+      parseCommaSeparatedHex(valueStr.c_str(), dataArray, RAW_DATA_ARRAY_SIZE);
+      for (int w = 0; w < numWords && w < RAW_DATA_ARRAY_SIZE; w++) {
+        irData.decodedRawDataArray[w] = dataArray[w];
+      }
+      if (numWords == 1) {
+        irData.decodedRawData = dataArray[0];
+      }
     }
-    if (numWords == 1) {
-      irData.decodedRawData = dataArray[0];
-    }
+
+    Serial.printf("[IR] Sending %s: address=0x%X, command=0x%X, bits=%u\n",
+      protocol.c_str(), irData.address, irData.command, bits);
 
     IrSender.write(&irData);
   }
