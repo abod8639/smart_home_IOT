@@ -5,7 +5,7 @@
 void handlePing() {
   logRequest();
   setCorsHeaders();
-  StaticJsonDocument<128> doc;
+  JsonDocument doc;
   doc["status"]  = "ok";
   doc["device"]  = DEVICE_NAME;
   doc["version"] = FIRMWARE_VERSION;
@@ -20,7 +20,7 @@ void handleGetSensors() {
   float temp     = dht.readTemperature();
   float humidity = dht.readHumidity();
 
-  StaticJsonDocument<1024> doc;
+  JsonDocument doc;
 
   // Environmental sensors
   if (!isnan(temp)) {
@@ -36,7 +36,7 @@ void handleGetSensors() {
   }
 
   // All pin states
-  JsonObject pins = doc.createNestedObject("pins");
+  JsonObject pins = doc["pins"].to<JsonObject>();
   for (uint8_t i = 0; i < PIN_COUNT; i++) {
     uint8_t gpio = PIN_MAP[i].gpio;
     if (PIN_MAP[i].isPwm) {
@@ -56,7 +56,7 @@ void handleGetSensors() {
 void handleSystemInfo() {
   logRequest();
   setCorsHeaders();
-  StaticJsonDocument<256> doc;
+  JsonDocument doc;
   doc["firmware"]   = FIRMWARE_VERSION;
   doc["device"]     = DEVICE_NAME;
   doc["chip_model"] = ESP.getChipModel();
