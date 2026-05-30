@@ -1,6 +1,7 @@
 #include <Arduino.h>
 // Must include IRremote.hpp here (without USE_IRREMOTE_HPP_AS_PLAIN_INCLUDE)
 // so this TU instantiates IrReceiver / IrSender for the whole project.
+#define RAW_BUFFER_LENGTH 750
 #include <IRremote.hpp>
 #include "globals.h"  // IR pin macros defined here (IR_RECEIVE_PIN, IR_SEND_PIN)
 #include "wifi_manager.h"
