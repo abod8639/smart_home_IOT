@@ -157,7 +157,7 @@ void handleIrSend() {
     return;
   }
 
-  if (!req.containsKey("protocol") || !req.containsKey("value") || !req.containsKey("bits")) {
+  if (!req["protocol"].is<const char*>() || !req["value"].is<const char*>() || !req["bits"].is<int>()) {
     sendSimple(400, "error", "protocol, value, and bits fields are required");
     return;
   }
@@ -184,18 +184,18 @@ void handleIrSend() {
              protocol.equalsIgnoreCase("UNKNOWN_AC")) {
     
     // Parse timing parameters with fallbacks (defaulting to the user's AC remote timing specs)
-    uint32_t frequency   = req.containsKey("frequency") ? req["frequency"].as<uint32_t>() : 38;
-    uint16_t headerMark  = req.containsKey("headerMark") ? req["headerMark"].as<uint16_t>() : 3850;
-    uint16_t headerSpace = req.containsKey("headerSpace") ? req["headerSpace"].as<uint16_t>() : 1900;
-    uint16_t oneMark     = req.containsKey("oneMark") ? req["oneMark"].as<uint16_t>() : 500;
-    uint16_t oneSpace    = req.containsKey("oneSpace") ? req["oneSpace"].as<uint16_t>() : 1400;
-    uint16_t zeroMark    = req.containsKey("zeroMark") ? req["zeroMark"].as<uint16_t>() : 500;
-    uint16_t zeroSpace   = req.containsKey("zeroSpace") ? req["zeroSpace"].as<uint16_t>() : 450;
+    uint32_t frequency   = req["frequency"].is<uint32_t>() ? req["frequency"].as<uint32_t>() : 38;
+    uint16_t headerMark  = req["headerMark"].is<uint16_t>() ? req["headerMark"].as<uint16_t>() : 3850;
+    uint16_t headerSpace = req["headerSpace"].is<uint16_t>() ? req["headerSpace"].as<uint16_t>() : 1900;
+    uint16_t oneMark     = req["oneMark"].is<uint16_t>() ? req["oneMark"].as<uint16_t>() : 500;
+    uint16_t oneSpace    = req["oneSpace"].is<uint16_t>() ? req["oneSpace"].as<uint16_t>() : 1400;
+    uint16_t zeroMark    = req["zeroMark"].is<uint16_t>() ? req["zeroMark"].as<uint16_t>() : 500;
+    uint16_t zeroSpace   = req["zeroSpace"].is<uint16_t>() ? req["zeroSpace"].as<uint16_t>() : 450;
     
     uint8_t flags = PROTOCOL_IS_LSB_FIRST;
-    if (req.containsKey("flags")) {
+    if (req["flags"].is<uint8_t>()) {
       flags = req["flags"].as<uint8_t>();
-    } else if (req.containsKey("isMsb") && req["isMsb"].as<bool>()) {
+    } else if (req["isMsb"].is<bool>() && req["isMsb"].as<bool>()) {
       flags = PROTOCOL_IS_MSB_FIRST;
     }
 
