@@ -16,7 +16,7 @@ void handleDigitalControl() {
   Serial.print("  -> Body: ");
   Serial.println(body);
 
-  StaticJsonDocument<128> req;
+  JsonDocument req;
   DeserializationError err = deserializeJson(req, body);
   if (err) {
     Serial.print("  -> JSON Deserialization error: ");
@@ -25,7 +25,7 @@ void handleDigitalControl() {
     return;
   }
 
-  if (!req.containsKey("pin") || !req.containsKey("value")) {
+  if (!req["pin"].is<int>() || !req["value"].is<int>()) {
     Serial.println("  -> Error: Missing pin or value parameter");
     sendSimple(400, "error", "Fields 'pin' and 'value' are required");
     return;
@@ -53,7 +53,7 @@ void handleDigitalControl() {
     Serial.printf("  -> Pin %d successfully set to %d\n", gpio, value);
   }
 
-  StaticJsonDocument<128> res;
+  JsonDocument res;
   res["status"]  = "ok";
   res["pin"]     = gpio;
   res["label"]   = pin->label;
@@ -75,7 +75,7 @@ void handleAnalogControl() {
   Serial.print("  -> Body: ");
   Serial.println(body);
 
-  StaticJsonDocument<128> req;
+  JsonDocument req;
   DeserializationError err = deserializeJson(req, body);
   if (err) {
     Serial.print("  -> JSON Deserialization error: ");
@@ -84,7 +84,7 @@ void handleAnalogControl() {
     return;
   }
 
-  if (!req.containsKey("pin") || !req.containsKey("value")) {
+  if (!req["pin"].is<int>() || !req["value"].is<int>()) {
     Serial.println("  -> Error: Missing pin or value parameter");
     sendSimple(400, "error", "Fields 'pin' and 'value' are required");
     return;
@@ -110,7 +110,7 @@ void handleAnalogControl() {
 
   writePin(gpio, value);
 
-  StaticJsonDocument<128> res;
+  JsonDocument res;
   res["status"] = "ok";
   res["pin"]    = gpio;
   res["label"]  = pin->label;
@@ -132,7 +132,7 @@ void handleAcControl() {
   Serial.print("  -> Body: ");
   Serial.println(body);
 
-  StaticJsonDocument<128> req;
+  JsonDocument req;
   DeserializationError err = deserializeJson(req, body);
   if (err) {
     Serial.print("  -> JSON Deserialization error: ");
@@ -141,7 +141,7 @@ void handleAcControl() {
     return;
   }
 
-  if (req.containsKey("target_temp")) {
+  if (req["target_temp"].is<int>()) {
     targetTemperature = req["target_temp"].as<int>();
     Serial.printf("  -> Target Temperature set to: %d\n", targetTemperature);
 
@@ -151,13 +151,13 @@ void handleAcControl() {
     prefs.end();
   }
 
-  if (req.containsKey("isOn")) {
+  if (req["isOn"].is<bool>()) {
     bool isOn = req["isOn"].as<bool>();
     Serial.printf("  -> AC state set to: %s\n", isOn ? "ON" : "OFF");
     writePin(19, isOn ? 1 : 0);
   }
 
-  StaticJsonDocument<128> res;
+  JsonDocument res;
   res["status"]             = "ok";
   res["target_temperature"] = targetTemperature;
   res["isOn"]               = digitalState[19];
