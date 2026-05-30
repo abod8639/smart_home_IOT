@@ -228,6 +228,7 @@ void handleIrSend() {
   }
 
   delay(50);
+  ledcDetach(IR_SEND_PIN); // Fix for ESP32 Core 3.0 timer exhaustion
   IrReceiver.start(); // Re-enable receiver
 
   JsonDocument res;
