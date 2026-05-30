@@ -35,6 +35,5 @@ Preferences prefs;
 // ─── DHT Sensor Instance ─────────────────────────────────────
 DHT dht(DHT_PIN, DHT_TYPE);
 
-// ─── IR Receiver and Transmitter Instances ───────────────────
-IRrecv irrecv(IR_RECV_PIN);
-IRsend irsend(IR_SEND_PIN);
+// (Global IrReceiver and IrSender are instantiated automatically by including IRremote.hpp)
+
