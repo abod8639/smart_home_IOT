@@ -22,17 +22,22 @@ void setCorsHeaders() {
 }
 
 void logRequest() {
+  HTTPMethod m = server.method();
+  // Skip noisy read-only requests
+  if (m == HTTP_GET || m == HTTP_OPTIONS) return;
+
   String method = "";
-  switch (server.method()) {
-    case HTTP_GET:     method = "GET"; break;
-    case HTTP_POST:    method = "POST"; break;
-    case HTTP_DELETE:  method = "DELETE"; break;
-    case HTTP_PUT:     method = "PUT"; break;
-    case HTTP_PATCH:   method = "PATCH"; break;
-    case HTTP_OPTIONS: method = "OPTIONS"; break;
+  switch (m) {
+    case HTTP_POST:    method = "POST";    break;
+    case HTTP_DELETE:  method = "DELETE";  break;
+    case HTTP_PUT:     method = "PUT";     break;
+    case HTTP_PATCH:   method = "PATCH";   break;
     default:           method = "UNKNOWN"; break;
   }
-  // Serial.printf("[HTTP] %s %s request received\n", method.c_str(), server.uri().c_str());
+  Serial.printf("\n[HTTP] %s %s\n", method.c_str(), server.uri().c_str());
+  if (server.hasArg("plain")) {
+    Serial.printf("  -> Body: %s\n", server.arg("plain").c_str());
+  }
 }
 
 void handleOptions() {
