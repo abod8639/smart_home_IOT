@@ -9,7 +9,7 @@ void sendJson(int code, JsonDocument& doc) {
 }
 
 void sendSimple(int code, const char* status, const char* message) {
-  StaticJsonDocument<128> doc;
+  JsonDocument doc;
   doc["status"]  = status;
   doc["message"] = message;
   sendJson(code, doc);
