@@ -173,6 +173,8 @@ void handleIrSend() {
   IrReceiver.stop();
   delay(50);
 
+  Serial.printf("[IR] Preparing to send on GPIO%d\n", IR_SEND_PIN);
+
   if (protocol.equalsIgnoreCase("RAW")) {
     // Parse decimal durations
     uint16_t* rawArray = new uint16_t[bits];
@@ -249,7 +251,6 @@ void handleIrSend() {
   }
 
   delay(50);
-  ledcDetach(IR_SEND_PIN); // Fix for ESP32 Core 3.0 timer exhaustion
   IrReceiver.start(); // Re-enable receiver
 
   JsonDocument res;
