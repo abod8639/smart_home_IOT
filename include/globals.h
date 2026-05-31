@@ -5,11 +5,22 @@
 #include <WebServer.h>
 #include <DHT.h>
 #include <Preferences.h>
+
+#ifndef IR_RECEIVE_PIN
 #define IR_RECEIVE_PIN 32
+#endif
+
+#ifndef IR_SEND_PIN
 #define IR_SEND_PIN 33
+#endif
+
 #define RAW_BUFFER_LENGTH 750
+
+// Only include as plain if not already included in the main translation unit
+#ifndef IR_REMOTE_HPP
 #define USE_IRREMOTE_HPP_AS_PLAIN_INCLUDE
 #include <IRremote.hpp>
+#endif
 
 // ─── Firmware Version ────────────────────────────────────────
 #define FIRMWARE_VERSION  "1.0.0"
