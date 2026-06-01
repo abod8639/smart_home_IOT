@@ -66,6 +66,8 @@ void handleIrLearn() {
   unsigned long start = millis();
   bool found = false;
 
+  Serial.println("[IR] Waiting for IR signal for up to 10 seconds...");
+
   while (millis() - start < 10000) {
     if (IrReceiver.decode()) {
       found = true;
@@ -250,6 +252,13 @@ void handleIrSend() {
     if (parsedCount == 0) {
       errorMsg = "Failed to parse pulse protocol hex data";
     } else {
+      // Reverse array back to original order since handleIrLearn reversed it
+      for (int i = 0; i < parsedCount / 2; i++) {
+        IRRawDataType temp = dataArray[i];
+        dataArray[i] = dataArray[parsedCount - 1 - i];
+        dataArray[parsedCount - 1 - i] = temp;
+      }
+
       Serial.printf("[IR] Sending %s: freq=%u kHz, header=%u/%u, one=%u/%u, zero=%u/%u, bits=%u, words=%d, flags=%u\n",
         protocol.c_str(), frequency, headerMark, headerSpace, oneMark, oneSpace, zeroMark, zeroSpace, bits, parsedCount, flags);
 
