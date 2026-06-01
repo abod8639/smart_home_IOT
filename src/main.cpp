@@ -3,6 +3,13 @@
 #define RAW_BUFFER_LENGTH 750
 #define RECORD_GAP_MICROS 12000
 #define IR_MAX_RAW_DATA_BITS 256 // Support up to 256 bits for AC remotes
+#define DECODE_NEC
+#define DECODE_SAMSUNG
+#define DECODE_LG
+#define DECODE_PANASONIC
+#define DECODE_SONY
+#define DECODE_DISTANCE_WIDTH
+#define DECODE_HASH
 #include <IRremote.hpp>
 
 #include "globals.h"
@@ -44,8 +51,9 @@ void setup() {
   Serial.println("[DHT] Sensor initialized");
 
   IrReceiver.begin(IR_RECEIVE_PIN, DISABLE_LED_FEEDBACK);
+  pinMode(IR_RECEIVE_PIN, INPUT_PULLUP);
   IrSender.begin(); // No arguments needed since IR_SEND_PIN is defined globally
-  Serial.printf("[IR] Receiver on GPIO%d, Transmitter on GPIO%d\n", IR_RECEIVE_PIN, IR_SEND_PIN);
+  Serial.printf("[IR] Receiver on GPIO%d (PULLUP), Transmitter on GPIO%d\n", IR_RECEIVE_PIN, IR_SEND_PIN);
 
   // Restore last-known pin states from NVS flash
   restorePinStates();
