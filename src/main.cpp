@@ -1,9 +1,9 @@
 #include <Arduino.h>
-// Must include IRremote.hpp here (without USE_IRREMOTE_HPP_AS_PLAIN_INCLUDE)
-// so this TU instantiates IrReceiver / IrSender for the whole project.
+// Instantiate IRremote here
 #define RAW_BUFFER_LENGTH 750
 #include <IRremote.hpp>
-#include "globals.h"  // IR pin macros defined here (IR_RECEIVE_PIN, IR_SEND_PIN)
+
+#include "globals.h"
 #include "wifi_manager.h"
 #include "gpio_manager.h"
 #include "http_handlers.h"
@@ -42,7 +42,7 @@ void setup() {
   Serial.println("[DHT] Sensor initialized");
 
   IrReceiver.begin(IR_RECEIVE_PIN, DISABLE_LED_FEEDBACK);
-  IrSender.begin(IR_SEND_PIN);
+  IrSender.begin(); // No arguments needed since IR_SEND_PIN is defined globally
   Serial.printf("[IR] Receiver on GPIO%d, Transmitter on GPIO%d\n", IR_RECEIVE_PIN, IR_SEND_PIN);
 
   // Restore last-known pin states from NVS flash
