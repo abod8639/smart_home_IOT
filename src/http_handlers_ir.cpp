@@ -71,20 +71,11 @@ void handleIrLearn() {
 
   Serial.println("[IR] Waiting for IR signal for up to 10 seconds...");
 
-  unsigned long lastPrint = 0;
   while (millis() - start < 10000) {
     if (IrReceiver.decode()) {
       found = true;
       break;
     }
-    
-    if (millis() - lastPrint >= 1000) {
-      lastPrint = millis();
-      int pinVal = digitalRead(IR_RECEIVE_PIN);
-      Serial.printf("[IR Debug] Pin: %d | PinVal: %d | Ticks: %u | Rawlen: %u | ISR State: %u\n",
-                    IR_RECEIVE_PIN, pinVal, irparams.TickCounterForISR, irparams.rawlen, irparams.StateForISR);
-    }
-    
     delay(50);
   }
 
