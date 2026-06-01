@@ -3,13 +3,6 @@
 #define RAW_BUFFER_LENGTH 750
 #define RECORD_GAP_MICROS 12000
 #define IR_MAX_RAW_DATA_BITS 256 // Support up to 256 bits for AC remotes
-#define DECODE_NEC
-#define DECODE_SAMSUNG
-#define DECODE_LG
-#define DECODE_PANASONIC
-#define DECODE_SONY
-#define DECODE_DISTANCE_WIDTH
-#define DECODE_HASH
 #include <IRremote.hpp>
 
 #include "globals.h"
