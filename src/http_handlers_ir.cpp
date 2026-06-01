@@ -110,11 +110,11 @@ void handleIrLearn() {
       int bitsPerWord = sizeof(IRRawDataType) * 8;
       int numWords = (IrReceiver.decodedIRData.numberOfBits + bitsPerWord - 1) / bitsPerWord;
       String hexStr = "";
-      for (int w = 0; w < numWords; w++) {
+      for (int w = numWords - 1; w >= 0; w--) {
         char valBuf[32];
         snprintf(valBuf, sizeof(valBuf), "0x%llX", (unsigned long long)IrReceiver.decodedIRData.decodedRawDataArray[w]);
         hexStr += valBuf;
-        if (w < numWords - 1) {
+        if (w > 0) {
           hexStr += ",";
         }
       }
@@ -289,7 +289,7 @@ void handleIrSend() {
         errorMsg = "Failed to parse protocol hex data";
       } else {
         for (int w = 0; w < numWords && w < RAW_DATA_ARRAY_SIZE; w++) {
-          irData.decodedRawDataArray[w] = dataArray[w];
+          irData.decodedRawDataArray[w] = dataArray[numWords - 1 - w];
         }
         if (numWords == 1) {
           irData.decodedRawData = dataArray[0];
