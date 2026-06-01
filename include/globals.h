@@ -18,6 +18,7 @@
 
 // Only include as plain if not already included in the main translation unit
 #ifndef IR_REMOTE_HPP
+#define IR_MAX_RAW_DATA_BITS 256 // Support up to 256 bits for AC remotes
 #define USE_IRREMOTE_HPP_AS_PLAIN_INCLUDE
 #include <IRremote.hpp>
 #endif
