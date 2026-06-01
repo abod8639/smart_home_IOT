@@ -60,7 +60,7 @@ void handleIrLearn() {
   logRequest();
   setCorsHeaders();
 
-  IrReceiver.resume();
+  IrReceiver.start();
   delay(100);
 
   unsigned long start = millis();
