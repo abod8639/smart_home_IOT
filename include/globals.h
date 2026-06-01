@@ -15,6 +15,7 @@
 #endif
 
 #define RAW_BUFFER_LENGTH 750
+#define RECORD_GAP_MICROS 12000
 
 // Only include as plain if not already included in the main translation unit
 #ifndef IR_REMOTE_HPP
