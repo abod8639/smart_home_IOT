@@ -1,6 +1,7 @@
 #include <Arduino.h>
 // Instantiate IRremote here
 #define RAW_BUFFER_LENGTH 750
+#define RECORD_GAP_MICROS 12000
 #define IR_MAX_RAW_DATA_BITS 256 // Support up to 256 bits for AC remotes
 #include <IRremote.hpp>
 
