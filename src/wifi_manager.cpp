@@ -3,8 +3,9 @@
 #include <WiFi.h>
 
 void setupWiFi() {
-  Serial.printf("[WiFi] Connecting to: %s\n", WIFI_SSID);
-  Serial.printf(" ip = ", WiFi.localIP().toString());
+  Serial.print("[WiFi] Connecting to: ");
+  Serial.println(WIFI_SSID);
+  Serial.printf("[WiFi] ip = %s\n", WiFi.localIP().toString().c_str());
   WiFi.mode(WIFI_STA);
   WiFi.setHostname(DEVICE_NAME);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);

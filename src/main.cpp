@@ -38,7 +38,7 @@ void setup() {
   
   // Note: We let Matter handle Wi-Fi connection and stack commissioning.
   // setupWiFi() is commented out to avoid interfering with Matter BLE commissioning.
-  // setupWiFi();
+  setupWiFi();
 
   dht.begin();
   Serial.println("[DHT] Sensor initialized");
