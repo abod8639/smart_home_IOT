@@ -12,13 +12,9 @@ const PinConfig PIN_MAP[] = {
 };
 const uint8_t PIN_COUNT = sizeof(PIN_MAP) / sizeof(PinConfig);
 
-// PWM ledcChannel offset — channels 0..7 reserved for PWM pins
-uint8_t pwmChannelIndex = 0;
-uint8_t pinToPwmChannel[256] = {};  // gpio -> ledc channel lookup
-
 // ─── Runtime State ────────────────────────────────────────────
-bool  digitalState[256]  = {};   // gpio -> on/off
-int   analogValue[256]   = {};   // gpio -> 0-255 duty cycle
+bool  digitalState[40]  = {};   // gpio -> on/off
+int   analogValue[40]   = {};   // gpio -> 0-255 duty cycle
 
 // ─── OTA State ───────────────────────────────────────────────
 volatile OtaState otaState      = OtaState::IDLE;
