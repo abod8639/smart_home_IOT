@@ -28,8 +28,9 @@ void writePin(uint8_t gpio, int value) {
 
   // Persist state across reboots
   prefs.begin("pins", false);
-  String key = "p" + String(gpio);
-  prefs.putInt(key.c_str(), value);
+  char key[8];
+  snprintf(key, sizeof(key), "p%d", gpio);
+  prefs.putInt(key, value);
   prefs.end();
 }
 
@@ -37,8 +38,9 @@ void restorePinStates() {
   prefs.begin("pins", true);
   for (uint8_t i = 0; i < PIN_COUNT; i++) {
     uint8_t gpio = PIN_MAP[i].gpio;
-    String  key  = "p" + String(gpio);
-    int     val  = prefs.getInt(key.c_str(), 0);
+    char key[8];
+    snprintf(key, sizeof(key), "p%d", gpio);
+    int val = prefs.getInt(key, 0);
     writePinHardware(gpio, val);
   }
   targetTemperature = prefs.getInt("target_temp", 24);
