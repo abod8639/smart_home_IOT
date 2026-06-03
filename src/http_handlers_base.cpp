@@ -3,9 +3,10 @@
 #include <WiFi.h>
 
 void sendJson(int code, JsonDocument& doc) {
-  String body;
-  serializeJson(doc, body);
-  server.send(code, "application/json", body);
+  server.setContentLength(measureJson(doc));
+  server.send(code, "application/json", "");
+  WiFiClient client = server.client();
+  serializeJson(doc, client);
 }
 
 void sendSimple(int code, const char* status, const char* message) {
@@ -26,7 +27,7 @@ void logRequest() {
   // Skip noisy read-only requests
   if (m == HTTP_GET || m == HTTP_OPTIONS) return;
 
-  String method = "";
+  const char* method = "UNKNOWN";
   switch (m) {
     case HTTP_POST:    method = "POST";    break;
     case HTTP_DELETE:  method = "DELETE";  break;
@@ -34,7 +35,7 @@ void logRequest() {
     case HTTP_PATCH:   method = "PATCH";   break;
     default:           method = "UNKNOWN"; break;
   }
-  Serial.printf("\n[HTTP] %s %s\n", method.c_str(), server.uri().c_str());
+  Serial.printf("\n[HTTP] %s %s\n", method, server.uri().c_str());
   if (server.hasArg("plain")) {
     Serial.printf("  -> Body: %s\n", server.arg("plain").c_str());
   }
@@ -53,19 +54,16 @@ void handleNotFound() {
 }
 
 void setupRoutes() {
-  // CORS pre-flight
-  server.onNotFound(handleNotFound);
-  server.on("/",                HTTP_OPTIONS, handleOptions);
-  server.on("/ping",            HTTP_OPTIONS, handleOptions);
-  server.on("/sensors",         HTTP_OPTIONS, handleOptions);
-  server.on("/control/digital", HTTP_OPTIONS, handleOptions);
-  server.on("/control/analog",  HTTP_OPTIONS, handleOptions);
-  server.on("/control/ac",      HTTP_OPTIONS, handleOptions);
-  server.on("/control/ir/learn", HTTP_OPTIONS, handleOptions);
-  server.on("/control/ir/send",  HTTP_OPTIONS, handleOptions);
-  server.on("/ota/update",      HTTP_OPTIONS, handleOptions);
-  server.on("/ota/status",      HTTP_OPTIONS, handleOptions);
-  server.on("/system/info",     HTTP_OPTIONS, handleOptions);
+  server.enableCORS(true);
+  
+  server.onNotFound([]() {
+    if (server.method() == HTTP_OPTIONS) {
+      setCorsHeaders();
+      server.send(204);
+    } else {
+      handleNotFound();
+    }
+  });
 
   // Actual routes
   server.on("/ping",            HTTP_GET,  handlePing);
