@@ -51,12 +51,8 @@ extern const uint8_t PIN_COUNT;
 #define PWM_FREQ          5000
 #define PWM_RESOLUTION    8      // 8-bit: 0-255
 
-extern uint8_t pwmChannelIndex;
-extern uint8_t pinToPwmChannel[256];
-
-// ─── Runtime State ────────────────────────────────────────────
-extern bool digitalState[256];
-extern int analogValue[256];
+extern bool digitalState[40];
+extern int analogValue[40];
 
 // ─── OTA State ───────────────────────────────────────────────
 enum class OtaState { IDLE, IN_PROGRESS, SUCCESS, FAILED };
