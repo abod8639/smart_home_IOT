@@ -14,8 +14,12 @@
 #define IR_SEND_PIN 33
 #endif
 
+#ifndef RAW_BUFFER_LENGTH
 #define RAW_BUFFER_LENGTH 750
+#endif
+#ifndef RECORD_GAP_MICROS
 #define RECORD_GAP_MICROS 12000
+#endif
 
 // Only include as plain if not already included in the main translation unit
 #ifndef IR_REMOTE_HPP
