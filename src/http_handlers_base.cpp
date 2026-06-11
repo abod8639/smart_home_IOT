@@ -71,6 +71,7 @@ void setupRoutes() {
   server.on("/control/digital", HTTP_POST, handleDigitalControl);
   server.on("/control/analog",  HTTP_POST, handleAnalogControl);
   server.on("/control/ac",      HTTP_POST, handleAcControl);
+  server.on("/control/ac/timer", HTTP_POST, handleAcTimer);
   server.on("/control/ir/learn", HTTP_GET,  handleIrLearn);
   server.on("/control/ir/send",  HTTP_POST, handleIrSend);
   server.on("/ota/update",      HTTP_POST, handleOtaUpdate);
