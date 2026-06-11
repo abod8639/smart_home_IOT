@@ -22,14 +22,27 @@ volatile int      otaProgress   = 0;
 String            otaError      = "";
 int               targetTemperature = 24; // Default target temp
 
+// ─── AC Timer ────────────────────────────────────────────────
+bool              acTimerActive     = false;
+unsigned long     acTimerDuration   = 0;
+unsigned long     acTimerStartMillis = 0;
+String            acTimerIrJson     = "";
+
 // ─── Web Server ──────────────────────────────────────────────
 WebServer server(80);
+
+// ─── MQTT Client ─────────────────────────────────────────────
+WiFiClient wifiClient;
+PubSubClient mqttClient(wifiClient);
 
 // ─── Preferences (NVS) ───────────────────────────────────────
 Preferences prefs;
 
 // ─── DHT Sensor Instance ─────────────────────────────────────
 DHT dht(DHT_PIN, DHT_TYPE);
+float currentTemp = NAN;
+float currentHum = NAN;
+unsigned long lastDhtReadTime = 0;
 
 // (Global IrReceiver and IrSender are instantiated automatically by including IRremote.hpp)
 
