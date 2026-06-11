@@ -163,3 +163,85 @@ void handleAcControl() {
   res["isOn"]               = digitalState[19];
   sendJson(200, res);
 }
+
+void handleAcTimer() {
+  logRequest();
+  setCorsHeaders();
+
+  if (!server.hasArg("plain")) {
+    sendSimple(400, "error", "Missing JSON body");
+    return;
+  }
+
+  String body = server.arg("plain");
+  JsonDocument req;
+  DeserializationError err = deserializeJson(req, body);
+  if (err) {
+    sendSimple(400, "error", "Invalid JSON");
+    return;
+  }
+
+  if (!req["seconds"].is<int>()) {
+    sendSimple(400, "error", "Field 'seconds' is required");
+    return;
+  }
+
+  int seconds = req["seconds"].as<int>();
+  if (seconds <= 0) {
+    // Cancel timer
+    acTimerActive = false;
+    acTimerDuration = 0;
+    acTimerIrJson = "";
+    Serial.println("[Timer] AC Timer cancelled manually");
+    sendSimple(200, "ok", "AC timer cancelled successfully");
+    return;
+  }
+
+  if (!req["ir_code"].is<JsonObject>()) {
+    sendSimple(400, "error", "Field 'ir_code' object is required");
+    return;
+  }
+
+  // Store timer parameters
+  acTimerDuration = (unsigned long)seconds * 1000;
+  acTimerStartMillis = millis();
+  acTimerActive = true;
+  
+  // Serialize the IR code object to string to keep in RAM
+  acTimerIrJson = "";
+  serializeJson(req["ir_code"], acTimerIrJson);
+
+  Serial.printf("[Timer] AC Timer set for %d seconds\n", seconds);
+
+  JsonDocument resDoc;
+  resDoc["status"] = "ok";
+  resDoc["message"] = "AC timer set successfully";
+  resDoc["seconds"] = seconds;
+  sendJson(200, resDoc);
+}
+
+void triggerAcTimerOff() {
+  Serial.println("[Timer] Timer expired. Executing AC off command.");
+  acTimerActive = false;
+  acTimerDuration = 0;
+
+  if (acTimerIrJson.length() > 0) {
+    JsonDocument req;
+    DeserializationError err = deserializeJson(req, acTimerIrJson);
+    if (!err) {
+      String errorMsg;
+      if (!executeIrSend(req, errorMsg)) {
+        Serial.printf("[Timer] Failed to send IR off signal: %s\n", errorMsg.c_str());
+      } else {
+        Serial.println("[Timer] IR off signal sent successfully.");
+      }
+    } else {
+      Serial.println("[Timer] Failed to deserialize AC off IR code.");
+    }
+    acTimerIrJson = "";
+  }
+
+  // Physical AC relay pin 19 to LOW
+  writePin(19, 0);
+}
+
