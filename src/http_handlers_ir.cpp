@@ -169,26 +169,10 @@ void handleIrLearn() {
   }
 }
 
-void handleIrSend() {
-  logRequest();
-  setCorsHeaders();
-
-  if (!server.hasArg("plain")) {
-    sendSimple(400, "error", "Missing JSON body");
-    return;
-  }
-
-  String body = server.arg("plain");
-  JsonDocument req;
-  DeserializationError err = deserializeJson(req, body);
-  if (err) {
-    sendSimple(400, "error", "Invalid JSON");
-    return;
-  }
-
+bool executeIrSend(JsonDocument& req, String& errorMsg) {
   if (!req["protocol"].is<const char*>() || !req["value"].is<const char*>() || !req["bits"].is<int>()) {
-    sendSimple(400, "error", "protocol, value, and bits fields are required");
-    return;
+    errorMsg = "protocol, value, and bits fields are required";
+    return false;
   }
 
   String protocol = req["protocol"].as<String>();
@@ -196,8 +180,8 @@ void handleIrSend() {
   uint16_t bits   = req["bits"].as<uint16_t>();
 
   if (valueStr.length() == 0 || bits == 0) {
-    sendSimple(400, "error", "value and bits must be non-zero");
-    return;
+    errorMsg = "value and bits must be non-zero";
+    return false;
   }
 
   IrReceiver.stop();
@@ -207,13 +191,13 @@ void handleIrSend() {
     protocol.c_str(), IR_SEND_PIN, bits);
 
   bool sent = false;
-  const char* errorMsg = "IR transmission failed";
+  errorMsg = "IR transmission failed";
 
   if (protocol.equalsIgnoreCase("RAW")) {
     if (bits > RAW_BUFFER_LENGTH) {
       errorMsg = "RAW sample count exceeds buffer limit";
     } else {
-      uint16_t* rawArray = new uint16_t[bits];
+      uint16_t* rawArray = new (std::nothrow) uint16_t[bits];
       if (!rawArray) {
         errorMsg = "Memory allocation failed";
       } else {
@@ -319,14 +303,34 @@ void handleIrSend() {
   IrReceiver.start();
   pinMode(IR_RECEIVE_PIN, INPUT_PULLUP);
 
-  if (!sent) {
-    Serial.printf("[IR] Send failed: %s\n", errorMsg);
-    sendSimple(400, "error", errorMsg);
+  if (sent) {
+    errorMsg = "";
+  }
+  return sent;
+}
+
+void handleIrSend() {
+  logRequest();
+  setCorsHeaders();
+
+  if (!server.hasArg("plain")) {
+    sendSimple(400, "error", "Missing JSON body");
     return;
   }
 
-  JsonDocument res;
-  res["status"] = "ok";
-  res["message"] = "IR signal transmitted successfully";
-  sendJson(200, res);
+  String body = server.arg("plain");
+  JsonDocument req;
+  DeserializationError err = deserializeJson(req, body);
+  if (err) {
+    sendSimple(400, "error", "Invalid JSON");
+    return;
+  }
+
+  String errorMsg;
+  if (!executeIrSend(req, errorMsg)) {
+    Serial.printf("[IR] Send failed: %s\n", errorMsg.c_str());
+    sendSimple(400, "error", errorMsg.c_str());
+  } else {
+    sendSimple(200, "ok", "IR signal transmitted successfully");
+  }
 }
