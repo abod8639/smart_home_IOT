@@ -5,6 +5,8 @@
 #include <WebServer.h>
 #include <DHT.h>
 #include <Preferences.h>
+#include <WiFiClient.h>
+#include <PubSubClient.h>
 
 #ifndef IR_RECEIVE_PIN
 #define IR_RECEIVE_PIN 32
@@ -37,9 +39,26 @@
 #define WIFI_SSID         ">_"
 #define WIFI_PASSWORD     "Qwertyuio0qwertyuio0"
 
+// ─── MQTT Broker ─────────────────────────────────────────────
+// Replace with the IP address of your actual MQTT broker
+#define MQTT_BROKER_IP    "192.168.1.100" 
+#define MQTT_BROKER_PORT  1883
+#define MQTT_DEVICE_ID    "esp32_smart_home_1"
+
+#define MQTT_TOPIC_CMD    "smarthome/esp32_smart_home_1/cmd"
+#define MQTT_TOPIC_STATE  "smarthome/esp32_smart_home_1/state"
+#define MQTT_TOPIC_SENSOR "smarthome/esp32_smart_home_1/sensor"
+#define MQTT_TOPIC_EVENT  "smarthome/esp32_smart_home_1/event"
+#define MQTT_TOPIC_STATUS "smarthome/esp32_smart_home_1/status"
+
 // ─── DHT Sensor ──────────────────────────────────────────────
 #define DHT_PIN           4
 #define DHT_TYPE          DHT22
+
+// Non-blocking sensor cache
+extern float currentTemp;
+extern float currentHum;
+extern unsigned long lastDhtReadTime;
 
     // ─── GPIO Pin Map Struct ──────────────────────────────────────
     struct PinConfig {
@@ -65,8 +84,19 @@ extern volatile int otaProgress;
 extern String otaError;
 extern int targetTemperature;
 
+// ─── AC Timer ────────────────────────────────────────────────
+extern bool acTimerActive;
+extern unsigned long acTimerDuration;
+extern unsigned long acTimerStartMillis;
+extern String acTimerIrJson;
+void triggerAcTimerOff();
+
 // ─── Web Server ──────────────────────────────────────────────
 extern WebServer server;
+
+// ─── MQTT Client ─────────────────────────────────────────────
+extern WiFiClient wifiClient;
+extern PubSubClient mqttClient;
 
 // ─── Preferences (NVS) ───────────────────────────────────────
 extern Preferences prefs;
