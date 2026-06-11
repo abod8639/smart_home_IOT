@@ -17,8 +17,8 @@ void handleGetSensors() {
   logRequest();
   setCorsHeaders();
 
-  float temp     = dht.readTemperature();
-  float humidity = dht.readHumidity();
+  float temp     = currentTemp;
+  float humidity = currentHum;
 
   JsonDocument doc;
 
@@ -49,6 +49,17 @@ void handleGetSensors() {
   doc["wifi_rssi"] = WiFi.RSSI();
   doc["heap_free"] = esp_get_free_heap_size();
   doc["target_temperature"] = targetTemperature;
+
+  if (acTimerActive) {
+    unsigned long elapsed = millis() - acTimerStartMillis;
+    if (elapsed < acTimerDuration) {
+      doc["ac_timer_remaining"] = (acTimerDuration - elapsed) / 1000;
+    } else {
+      doc["ac_timer_remaining"] = 0;
+    }
+  } else {
+    doc["ac_timer_remaining"] = 0;
+  }
 
   sendJson(200, doc);
 }
