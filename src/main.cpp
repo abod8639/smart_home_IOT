@@ -10,6 +10,7 @@
 #include "gpio_manager.h"
 #include "http_handlers.h"
 #include "ota_manager.h"
+#include "mqtt_manager.h"
 #include <Matter.h>
 
 // ─── Matter Endpoints ─────────────────────────────────────────
@@ -47,6 +48,26 @@ void setup() {
   pinMode(IR_RECEIVE_PIN, INPUT_PULLUP);
   IrSender.begin(); // No arguments needed since IR_SEND_PIN is defined globally
   Serial.printf("[IR] Receiver on GPIO%d (PULLUP), Transmitter on GPIO%d\n", IR_RECEIVE_PIN, IR_SEND_PIN);
+
+  // Initialize NVS
+  prefs.begin("pins", false);
+  
+  // Restore AC timer from NVS if active
+  if (prefs.getBool("ac_timer_active", false)) {
+    unsigned long storedDuration = prefs.getUInt("ac_timer_dur", 0);
+    unsigned long storedStart = prefs.getUInt("ac_timer_start", 0);
+    String storedJson = prefs.getString("ac_timer_json", "");
+    
+    // Simple restoration logic: assume device crashed and we need to finish the timer
+    if (storedDuration > 0 && storedJson.length() > 0) {
+      acTimerActive = true;
+      acTimerDuration = storedDuration;
+      // Start counting from NOW since we don't have an RTC
+      acTimerStartMillis = millis(); 
+      acTimerIrJson = storedJson;
+      Serial.println("[NVS] Restored AC Timer");
+    }
+  }
 
   // Restore last-known pin states from NVS flash
   restorePinStates();
@@ -113,6 +134,8 @@ void setup() {
   server.begin();
   Serial.println("[HTTP] Web server started on port 80");
 
+  setupMQTT();
+
   setupOTA();
 
   pinMode(buttonPin, INPUT_PULLUP);
@@ -126,6 +149,30 @@ void setup() {
 void loop() {
   server.handleClient();
   handleOTA();
+  loopMQTT();
+  
+  // Non-blocking DHT22 reading every 5 seconds
+  if (millis() - lastDhtReadTime >= 5000) {
+    lastDhtReadTime = millis();
+    float h = dht.readHumidity();
+    float t = dht.readTemperature();
+    if (!isnan(h) && !isnan(t)) {
+      currentHum = h;
+      currentTemp = t;
+      publishSensorData();
+    }
+  }
+
+  // Check AC timer
+  if (acTimerActive) {
+    if (millis() - acTimerStartMillis >= acTimerDuration) {
+      triggerAcTimerOff();
+      prefs.begin("pins", false);
+      prefs.putBool("ac_timer_active", false);
+      prefs.end();
+      publishState();
+    }
+  }
   
   // Handle factory reset / decommissioning via BOOT button
   if (digitalRead(buttonPin) == LOW) {
