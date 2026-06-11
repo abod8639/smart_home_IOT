@@ -25,10 +25,12 @@ void handleSystemInfo();
 void handleDigitalControl();
 void handleAnalogControl();
 void handleAcControl();
+void handleAcTimer();
 
 // IR Handlers
 void handleIrLearn();
 void handleIrSend();
+bool executeIrSend(JsonDocument& req, String& errorMsg);
 
 // OTA Handlers
 void handleOtaUpdate();
